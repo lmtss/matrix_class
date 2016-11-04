@@ -1,87 +1,234 @@
 #include <iostream>
 #include "cls.h"
 using namespace std;
-
+using namespace MCal;
 int main()
 {
-    Matrix<double> md={
-    {1,2,3,4,5},
-    {6,7,8,9},
-    {1},
-    {1,2,3},
-    {1,2,3,1,2}
-    };
-    Matrix<double> sm={
-        {1,0,0},
-        {0},
-        {0}
-    };
-
-    cout
-    <<"md itself\n"<<md<<endl
-    <<"md+md=\n"<<md+md<<endl
-    <<"md-md=\n"<<md-md<<endl
-    <<"md*3=\n"<<md*3.0<<endl
-    <<"2*md=\n"<<2.0*md<<endl
-    <<"md*md=\n"<<md*md<<endl
-    <<"det(md)=\n"<<md.determinant()<<endl;
-
-
-    cout<<"md^(-1)=\n"<<md.inverse()<<endl;
-    md.eraseColumn(1);
-    md.eraseRow(1);
-    cout<<"md after erase()\n"<<md<<endl;
-    cout<<"det(md)=\n"<<md.determinant()<<endl;
-    cout<<"inverse of a singular matrix\n"<<sm.inverse()<<endl;
-
-    cout<<"tr(md)=\n"<<md.trace()<<endl;
-    md.insertColumn(1,Matrix<double>::Vector({1,2,3,4,5}));
-    cout<<"md after insert()\n"<<md<<endl;
-    Matrix<double>::Vector v1{1,2,3,4,5},v2{2,2,2,2,2};
-    cout<<"iterating a vector"<<endl;
-    for(auto x:v1){
-        cout<<x<<" ";
-    }
-    cout<<"\nvector size=\n"<<v1.size()<<endl;
-    cout<<"<v1,v2>=\n"<<v1.innerProduct(v2)<<endl;
-    cout<<"md(1,1)"<<endl<<md[1][1]<<endl;
-    cout<<"iterating a matrix"<<endl;
-    for(auto r:md){
-        for(auto x:r){
-            cout<<x<<" ";
+    map<string,Matrix> ms;
+    string cmd;
+    while(cin>>cmd){
+        if(cmd=="add"){
+            string name;
+            int i,j;
+            cin>>name>>i>>j;
+            if(!i||!j){
+                cout<<"cannot add an empty matrix"<<endl;
+                continue;
+            }
+            if(ms.find(name)!=ms.end()){
+                cout<<"name already been used"<<endl;
+                continue;
+            }
+            Matrix mtmp(i,j);
+            for(int a=1;a<=i;a++){
+                for(int b=1;b<=j;b++){
+                    cin>>mtmp(a,b);
+                }
+            }
+            ms[name]=mtmp;
+            cout<<"add completed:"<<name<<endl<<mtmp
+            <<"---------------------------------"<<endl;
         }
-        cout<<endl;
+        else if(cmd=="delete"){
+            string name;
+            cin>>name;
+            auto it=ms.find(name);
+            if(it==ms.end()){
+                cout<<"no such name"<<endl;
+                continue;
+            }
+            cout<<"delete completed:"<<name<<endl<<it->second
+            <<"---------------------------------"<<endl;
+            ms.erase(it);
+        }
+        else if(cmd=="showall"){
+            if(ms.empty()){
+                cout<<"empty! please use add"<<endl;
+            }
+            for(auto x:ms){
+                cout<<"matrix name:"<<x.first<<"\n---------------------------------"<<endl
+                <<x.second<<"---------------------------------"<<endl;
+            }
+        }
+        else if(cmd=="show"){
+            string name;
+            cin>>name;
+            auto it=ms.find(name);
+            if(it==ms.end()){
+                cout<<"no such name"<<endl;
+                continue;
+            }
+            cout<<"matrix name:"<<it->first<<"\n---------------------------------"<<endl
+                <<it->second<<"---------------------------------"<<endl;
+        }
+        else if(cmd=="+"){
+            string name1,name2,nres;
+            cin>>name1>>name2>>nres;
+            auto it1=ms.find(name1),it2=ms.find(name2),itres=ms.find(nres);
+            if(it1==ms.end()){
+                cout<<"there is no "<<name1<<endl;
+                continue;
+            }
+            if(it2==ms.end()){
+                cout<<"there is no "<<name2<<endl;
+                continue;
+            }
+            if(itres!=ms.end()){
+                cout<<"name "<<nres<<" already been used"<<endl;
+                continue;
+            }
+            Matrix mres=(it1->second)+(it2->second);
+            if(!mres){
+                cout<<"cannot calculate "<<name1<<" + "<<name2<<endl;
+                continue;
+            }
+            ms[nres]=mres;
+            cout<<"calculation result:"<<nres<<endl<<mres<<"---------------------------------"<<endl;
+
+        }
+        else if(cmd=="-"){
+            string name1,name2,nres;
+            cin>>name1>>name2>>nres;
+            auto it1=ms.find(name1),it2=ms.find(name2),itres=ms.find(nres);
+            if(it1==ms.end()){
+                cout<<"there is no "<<name1<<endl;
+                continue;
+            }
+            if(it2==ms.end()){
+                cout<<"there is no "<<name2<<endl;
+                continue;
+            }
+            if(itres!=ms.end()){
+                cout<<"name "<<nres<<" already been used"<<endl;
+                continue;
+            }
+            Matrix mres=(it1->second)-(it2->second);
+            if(!mres){
+                cout<<"cannot calculate "<<name1<<" - "<<name2<<endl;
+                continue;
+            }
+            ms[nres]=mres;
+            cout<<"calculation result:"<<nres<<endl<<mres<<"---------------------------------"<<endl;
+
+
+        }
+        else if(cmd=="*"){
+            string name1,name2,nres;
+            cin>>name1>>name2>>nres;
+            auto it1=ms.find(name1),it2=ms.find(name2),itres=ms.find(nres);
+            if(it1==ms.end()){
+                cout<<"there is no "<<name1<<endl;
+                continue;
+            }
+            if(it2==ms.end()){
+                cout<<"there is no "<<name2<<endl;
+                continue;
+            }
+            if(itres!=ms.end()){
+                cout<<"name "<<nres<<" already been used"<<endl;
+                continue;
+            }
+            Matrix mres=(it1->second)*(it2->second);
+            if(!mres){
+                cout<<"cannot calculate "<<name1<<" * "<<name2<<endl;
+                continue;
+            }
+            ms[nres]=mres;
+            cout<<"calculation result:"<<nres<<endl<<mres<<"---------------------------------"<<endl;
+
+
+        }
+        else if(cmd=="*val"){
+            string name1,nres;
+            double d;
+            cin>>name1>>d>>nres;
+            auto it1=ms.find(name1),itres=ms.find(nres);
+            if(it1==ms.end()){
+                cout<<"there is no "<<name1<<endl;
+                continue;
+            }
+            if(itres!=ms.end()){
+                cout<<"name "<<nres<<" already been used"<<endl;
+                continue;
+            }
+            Matrix mres=(it1->second)*d;
+            if(!mres){
+                cout<<"cannot calculate "<<name1<<" * "<<d<<endl;
+                continue;
+            }
+            ms[nres]=mres;
+            cout<<"calculation result:"<<nres<<endl<<mres<<"---------------------------------"<<endl;
+
+        }
+        else if(cmd=="det"){
+            string name;
+            cin>>name;
+            auto it=ms.find(name);
+            if(it==ms.end()){
+                cout<<"no such name"<<endl;
+                continue;
+            }
+            cout<<"det("<<name<<") is "<<(it->second).determinant()<<endl;
+        }
+        else if(cmd=="inv"){
+             string name1,nres;
+            cin>>name1>>nres;
+            auto it1=ms.find(name1),itres=ms.find(nres);
+            if(it1==ms.end()){
+                cout<<"there is no "<<name1<<endl;
+                continue;
+            }
+            if(itres!=ms.end()){
+                cout<<"name "<<nres<<" already been used"<<endl;
+                continue;
+            }
+            Matrix mres=it1->second.inverse();
+            if(!mres){
+                cout<<name1<<" is a singular matrix"<<endl;
+                continue;
+            }
+            ms[nres]=mres;
+            cout<<"calculation result:"<<nres<<endl<<mres<<"---------------------------------"<<endl;
+
+        }
+        else if(cmd=="rank"){
+            string name;
+            cin>>name;
+            auto it=ms.find(name);
+            if(it==ms.end()){
+                cout<<"no such name"<<endl;
+                continue;
+            }
+            cout<<"rank of "<<name<<" is "<<it->second.rank()<<endl;
+        }
+        else if(cmd=="tr"){
+            string name;
+            cin>>name;
+            auto it=ms.find(name);
+            if(it==ms.end()){
+                cout<<"no such name"<<endl;
+                continue;
+            }
+            cout<<"trace of "<<name<<" is "<<it->second.trace()<<endl;
+        }
+        else if(cmd=="trans"){
+             string name1,nres;
+            cin>>name1>>nres;
+            auto it1=ms.find(name1),itres=ms.find(nres);
+            if(it1==ms.end()){
+                cout<<"there is no "<<name1<<endl;
+                continue;
+            }
+            if(itres!=ms.end()){
+                cout<<"name "<<nres<<" already been used"<<endl;
+                continue;
+            }
+            Matrix mres=it1->second.transpose();
+            ms[nres]=mres;
+            cout<<"calculation result:"<<nres<<endl<<mres<<"---------------------------------"<<endl;
+
+        }
     }
-    cout<<"an unitary matrix\n"<<E<double>(5)<<endl;
-    Matrix<double> e5=E<double>(5);
-    e5(1,3)=5;
-    cout<<"after changing an element\n"<<e5<<endl;
-    e5.addRow(Matrix<double>::Vector({1,3,1,4,2}));
-    cout<<"after adding a row\n"<<e5<<endl;
-    e5.addColumn(Matrix<double>::Vector({1,3,1,4,2}));
-    cout<<"after adding a column\n"<<e5;
-    Matrix<double> em;
-    em.addColumn(v1);
-    em.addRow(v2);
-    cout<<"adding elements to an empty matrix\n"<<em<<endl;
-    cout<<"md\n"<<md<<endl
-    <<"(md)^T\n"<<md.transpose()<<endl
-    <<"md row="<<md.numRow()<<" md column="<<md.numColumn()<<endl
-    <<"t row="<<md.transpose().numRow()<<" t column="<<md.transpose().numColumn()<<endl;
-    cout<<"\n!!!!!!!!!!!!\nNow testing int matrix"<<endl;
-    Matrix<int> mi={
-        {1,2},
-        {1,2,3},
-        {1,2,3,4,5},
-        {1,1,2,1,2},
-        {1}
-    };
-    cout<<mi<<endl
-    <<mi.determinant()<<endl
-    <<mi.trace()<<endl
-    <<mi.inverse()<<endl
-    <<mi.transpose()<<endl
-    <<(mi*=mi)<<endl;
+
     return 0;
 }
-
