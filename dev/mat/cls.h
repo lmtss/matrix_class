@@ -1,4 +1,7 @@
 #include <bits/stdc++.h>
+
+namespace MCal{
+
 template <class TVal>
 struct Result{
     bool good;
@@ -12,7 +15,8 @@ struct Result{
     }
 };
 template <class TVal>
-struct Matrix{
+struct __Matrix{
+private:
     std::vector<std::vector<TVal>> mat;
     bool good;
     size_t nColumn;
@@ -31,19 +35,20 @@ struct Matrix{
     }
 public:
     template <class Tval>
-    friend std::ostream& operator<<(std::ostream&,Matrix<Tval> &);
+    friend std::ostream& operator<<(std::ostream&,__Matrix<Tval> &);
     template <class Tval>
-    friend std::ostream& operator<<(std::ostream &o,Matrix<Tval> &&x);
+    friend std::ostream& operator<<(std::ostream &o,__Matrix<Tval> &&x);
 
     struct Vector{
         private:
             std::vector<TVal> r;
         public:
             bool isColumnVector;
-            friend class Matrix<TVal>;
+            friend class __Matrix<TVal>;
             TVal operator[](size_t n){return r[n-1];}
             typename std::vector<TVal>::iterator begin(){return r.begin();}
             typename std::vector<TVal>::iterator end(){return r.end();}
+            bool operator==(const Vector &v2){return r==v2.r;}
             size_t size(){return r.size();}
             Vector(std::vector<TVal> &v,bool cv=false):r(v),isColumnVector(cv){};
             Vector(std::initializer_list<TVal>  &&listx,bool cv=false):r(listx),isColumnVector(cv){};
@@ -62,23 +67,23 @@ public:
     using rowIter=typename std::vector<TVal>::iterator;
     using columnIter=typename std::vector<std::vector<TVal>>::iterator;
 
-    ~Matrix()=default;
+    ~__Matrix()=default;
 
-    Matrix():good(true),nColumn(0){};
-    Matrix(size_t row,size_t column):nColumn(column),mat(row,_row(column,(TVal)0)),good(true){};
-    Matrix& operator=(Matrix&&)=default;
-    Matrix(Matrix const&)=default;
-    Matrix& operator=(Matrix const&)=default;
+    __Matrix():good(true),nColumn(0){};
+    __Matrix(size_t row,size_t column):nColumn(column),mat(row,_row(column,(TVal)0)),good(true){};
+    __Matrix& operator=(__Matrix&&)=default;
+    __Matrix(__Matrix const&)=default;
+    __Matrix& operator=(__Matrix const&)=default;
     TVal& operator()(size_t i,size_t j){
         return mat[i-1][j-1];
     }
-    Matrix& operator=(bool x){
+    __Matrix& operator=(bool x){
         good=x;
         if(!good)
             nColumn=0;
         return *this;
     }
-    Matrix& operator=(std::vector<std::vector<TVal>> &xmat){
+    __Matrix& operator=(std::vector<std::vector<TVal>> &xmat){
         mat=xmat;
         good=true;
         if(xmat.empty()){
@@ -87,7 +92,7 @@ public:
         nColumn=xmat[0].size();
         return *this;
     }
-    Matrix(std::initializer_list<std::initializer_list<TVal>> mx){
+    __Matrix(std::initializer_list<std::initializer_list<TVal>> mx){
         nColumn=0;
         for(auto m:mx){
             _row newr;
@@ -105,6 +110,12 @@ public:
             }
         }
         good=true;
+    }
+    bool operator==(const __Matrix &x){
+        return mat==x.mat;
+    }
+    operator bool(){
+        return good;
     }
     Vector operator[](size_t x){
         return Vector(mat[x-1]);
@@ -154,10 +165,15 @@ public:
         return true;
     }
     bool eraseRow(size_t i){
-        return eraseRow(i,i+1);
+        if(i>mat.size()){
+            return false;
+        }
+        i--;
+        mat.erase(mat.begin()+i);
+        return true;
     }
     bool eraseRow(size_t i,size_t j){
-        if(i>=mat.size()||j<i||j>=mat.size()){
+        if(i>mat.size()||j<i||j>mat.size()||j<i){
             return false;
         }
         mat.erase(mat.begin()+i-1,mat.begin()+j-1);
@@ -170,11 +186,19 @@ public:
         for(auto it=mat.begin();it<mat.end();it++){
             it->erase(it->begin()+i-1,it->begin()+j-1);
         }
-        nColumn+=i-j;
+        nColumn-=j-i;
         return true;
     }
     bool eraseColumn(size_t i){
-        return eraseColumn(i,i+1);
+        if(i>nColumn){
+            return false;
+        }
+        i--;
+        for(auto it=mat.begin();it<mat.end();it++){
+            it->erase(it->begin()+i);
+        }
+        nColumn--;
+        return true;
     }
     void addRow(const Vector &rx){
         if(mat.size()==0){
@@ -222,9 +246,9 @@ public:
     }
     typename decltype(mat)::iterator begin(){return mat.begin();}
     typename decltype(mat)::iterator end(){return mat.end();}
-    Matrix operator+(const Matrix &m2){
+    __Matrix operator+(const __Matrix &m2){
 
-        Matrix<TVal> mres;
+        __Matrix<TVal> mres;
         if(!(good&&m2.good))
         {
             return mres=false;
@@ -243,8 +267,8 @@ public:
         return mres=true;
     }
     template<class Tval>
-    friend Matrix operator*(const Matrix<Tval> &thisx ,Tval val){
-        Matrix<TVal> mres;
+    friend __Matrix operator*(const __Matrix<Tval> &thisx ,Tval val){
+        __Matrix<TVal> mres;
         if(!thisx.good){
             return mres=false;
         }
@@ -259,8 +283,8 @@ public:
         return mres=true;
     }
     template<class Tval>
-    friend Matrix operator*(Tval val,const Matrix<Tval> &thisx ){
-        Matrix<TVal> mres;
+    friend __Matrix operator*(Tval val,const __Matrix<Tval> &thisx ){
+        __Matrix<TVal> mres;
         if(!thisx.good){
             return mres=false;
         }
@@ -274,8 +298,8 @@ public:
         mres.nColumn=mres.mat[0].size();
         return mres=true;
     }
-    Matrix operator-(const Matrix &m2){
-        Matrix<TVal> mres;
+    __Matrix operator-(const __Matrix &m2){
+        __Matrix<TVal> mres;
         if(!(good&&m2.good))
         {
             return mres=false;
@@ -294,8 +318,8 @@ public:
         return mres=true;
     }
     template <class Tval>
-    friend Matrix operator*(Matrix<Tval> &m1,Matrix<Tval> &m2){
-        Matrix<Tval> mres;
+    friend __Matrix operator*(__Matrix<Tval> &m1,__Matrix<Tval> &m2){
+        __Matrix<Tval> mres;
         if(!(m1.good&&m2.good)){
             return mres=false;
         }
@@ -316,24 +340,24 @@ public:
         mres.nColumn=m2.nColumn;
         return mres=true;
     }
-    Matrix& operator+=(Matrix x){
+    __Matrix& operator+=(__Matrix x){
         (*this)=(*this)+x;
         return *this;
     }
-    Matrix& operator-=(Matrix x){
+    __Matrix& operator-=(__Matrix x){
         (*this)=(*this)-x;
         return *this;
     }
-    Matrix& operator*=(TVal x){
+    __Matrix& operator*=(TVal x){
         (*this)=(*this)*x;
         return *this;
     }
-    Matrix& operator*=(Matrix x){
+    __Matrix& operator*=(__Matrix x){
         (*this)=(*this)*x;
         return *this;
     }
     template <class Tval>
-    friend Matrix<Tval> E(size_t n);
+    friend __Matrix<Tval> E(size_t n);
     Result<TVal> determinant(){
         if(nColumn!=mat.size()){
             return Result<TVal>(false,0);
@@ -352,12 +376,12 @@ public:
         return Result<TVal>(true,sum);
     }
     Result<TVal> cofactor(size_t i,size_t j){
-        Matrix<TVal> mres=*this;
+        __Matrix<TVal> mres=*this;
         if(i>nColumn||j>nColumn||nColumn!=mat.size()){
             return Result<TVal>(false,0);
         }
-        mres.eraseColumn(j);
         mres.eraseRow(i);
+        mres.eraseColumn(j);
         if(mres.nColumn==0){
             return Result<TVal>(false,0);
         }
@@ -371,8 +395,8 @@ public:
         res.val*=(((i+j)%2)?(-1.0):1.0);
         return res;
     }
-    Matrix<TVal> inverse(){
-        Matrix<TVal> mres(nColumn,nColumn);
+    __Matrix<TVal> inverse(){
+        __Matrix<TVal> mres(mat.size(),mat.size());
         if(nColumn!=mat.size()){
             return mres=false;
         }
@@ -382,7 +406,7 @@ public:
         }
         for(size_t i=1;i<=mat.size();i++){
             for(size_t j=1;j<=nColumn;j++){
-                mres.mat[j-1][i-1]=algebraicCofactor(i,j)?(algebraicCofactor(i,j).val/det.val):0;
+                mres.mat[j-1][i-1]=(algebraicCofactor(i,j).val/det.val);
             }
         }
         mres.nColumn=nColumn;
@@ -398,8 +422,8 @@ public:
         }
         return Result<TVal>(true,sum);
     }
-    Matrix transpose(){
-        Matrix<TVal> mres;
+    __Matrix transpose(){
+        __Matrix<TVal> mres;
         if(nColumn==0||mat.size()==0){
             return mres=false;
         }
@@ -410,9 +434,78 @@ public:
     }
     size_t numRow(){return mat.size();}
     size_t numColumn(){return nColumn;}
+    size_t rank(){
+    std::vector<std::vector<double>> mvec;
+        if(typeid(TVal)!=typeid(double)){
+            for(auto row:mat){
+                std::vector<double> mrow;
+                for(auto elm:row){
+                    mrow.push_back((double)elm);
+                }
+                mvec.push_back(mrow);
+            }
+        }
+        else{
+            mvec=mat;
+        }
+        size_t r=0;
+        auto equals=[](double i,double j){return (fabs(i-j)<1e-6);};
+        auto min=[](size_t i,size_t j){return ((i<j)?i:j);};
+        while(mvec.size()&&mvec[0].size()&&r<mat.size()&&r<mat[0].size()){
+
+
+            size_t i=0;
+            for(;i<mvec.size();i++){
+                if(!equals(mvec[i][0],0)){
+                    if(i!=0){
+                        auto tmp=mvec[i];
+                        mvec[i]=mvec[0];
+                        mvec[0]=tmp;
+                    }
+                    break;
+                }
+            }
+
+            if(mvec[0].size()==1){
+                if(i!=mvec.size()){
+                    r++;
+                }
+                break;
+            }
+            if(mvec.size()==1){
+                for(auto x:mvec[0]){
+                    if(!equals(x,0)){
+                        r++;
+                        break;
+                    }
+                }
+                break;
+            }
+            if(i==mvec.size()){
+                    for(auto iter=mvec.begin();iter!=mvec.end();iter++){
+                        iter->erase(iter->begin());
+                    }
+                    continue;
+            }
+            for(i=1;i<mvec[0].size();i++){
+                mvec[0][i]=mvec[0][i]/mvec[0][0];
+            }
+            for(i=1;i<mvec.size();i++){
+                for(int j=1;j<mvec[i].size();j++){
+                    mvec[i][j]-=mvec[0][j]*mvec[i][0];
+                }
+                mvec[i].erase(mvec[i].begin());
+            }
+            mvec.erase(mvec.begin());
+            r++;
+        }
+        return r;
+
+    }
 };
-template <class TVal>
-std::ostream& operator<<(std::ostream &o,Matrix<TVal> &x){
+
+template <typename TVal>
+std::ostream& operator<<(std::ostream &o,__Matrix<TVal> &x){
     if(!x.good){
         return o<<"Invalid Value";
     }
@@ -425,7 +518,7 @@ std::ostream& operator<<(std::ostream &o,Matrix<TVal> &x){
     return o;
 }
 template <class TVal>
-std::ostream& operator<<(std::ostream &o,Matrix<TVal> &&x){
+std::ostream& operator<<(std::ostream &o,__Matrix<TVal> &&x){
     if(!x.good){
         return o<<"Invalid Value";
     }
@@ -458,10 +551,13 @@ std::ostream& operator<<(std::ostream &o,Result<TVal> &val){
     return o;
 }
 template <class Tval>
-Matrix<Tval> E(size_t n){
-    Matrix<Tval> e(n,n);
+__Matrix<Tval> E(size_t n){
+    __Matrix<Tval> e(n,n);
     for(int i=1;i<=n;i++){
         e.mat[i-1][i-1]=(Tval)1;
     }
     return e;
 }
+typedef __Matrix<double> Matrix;
+
+};
