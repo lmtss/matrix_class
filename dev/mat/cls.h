@@ -436,7 +436,7 @@ public:
     size_t numColumn(){return nColumn;}
     size_t rank(){
     std::vector<std::vector<double>> mvec;
-        if(typeid(TVal)!=typeid(double)){
+        if(typeid(TVal).name()!=typeid(double).name()){
             for(auto row:mat){
                 std::vector<double> mrow;
                 for(auto elm:row){
